@@ -21,6 +21,19 @@ void sch_arins(void *arr, size_t elm_size, size_t *len_ptr, size_t index, const 
 void sch_arrem(void *arr, size_t elm_size, size_t *len_ptr, size_t index);
 void sch_arcpy(void *dst, const void *src, size_t elm_size, size_t len);
 void sch_arclr(void *arr, size_t elm_size, size_t *len_ptr);
+void sch_darfree(void *p);
+void sch_darpush(void **darr_ptr, size_t elm_size, const void *elm);
+void sch_darpop(void **darr_ptr, size_t elm_size);
+void sch_darins(void **darr_ptr, size_t elm_size, size_t index, const void *elm);
+void sch_darrem(void **darr_ptr, size_t elm_size, size_t index);
+void sch_darres(void **darr_ptr, size_t elm_size, size_t cap);
+void sch_darfit(void **darr_ptr, size_t elm_size);
+void sch_darsiz(void **darr_ptr, size_t elm_size, size_t len, const void *opt_fill);
+void sch_darclr(void **darr_ptr, size_t elm_size);
+size_t sch_darlen(const void *darr);
+size_t sch_darcap(const void *darr);
+
+#define DARNEW NULL
 
 #ifdef SCH_C23
 # define arpush(arr, len_ptr, elm) do \
@@ -49,20 +62,6 @@ void sch_arclr(void *arr, size_t elm_size, size_t *len_ptr);
 #define arcpy(dst, src, len) sch_arcpy((dst), (src), sizeof(*(dst)), (len))
 
 #define arclr(arr, len_ptr) sch_arclr((arr), sizeof(*(arr)), (len_ptr))
-
-void sch_darfree(void *p);
-void sch_darpush(void **darr_ptr, size_t elm_size, const void *elm);
-void sch_darpop(void **darr_ptr, size_t elm_size);
-void sch_darins(void **darr_ptr, size_t elm_size, size_t index, const void *elm);
-void sch_darrem(void **darr_ptr, size_t elm_size, size_t index);
-void sch_darres(void **darr_ptr, size_t elm_size, size_t cap);
-void sch_darfit(void **darr_ptr, size_t elm_size);
-void sch_darsiz(void **darr_ptr, size_t elm_size, size_t len, const void *opt_fill);
-void sch_darclr(void **darr_ptr, size_t elm_size);
-size_t sch_darlen(const void *darr);
-size_t sch_darcap(const void *darr);
-
-#define DARNEW NULL
 
 #define darfree(darr) sch_darfree((void *)darr)
 

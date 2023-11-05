@@ -8,12 +8,11 @@ int main(void)
     size_t arr_cap = sizeof(arr) / sizeof(arr[0]);
     size_t arr_len = 0;
 
-    arpush(arr, &arr_len, 1);
-    arpush(arr, &arr_len, 2);
-    arpush(arr, &arr_len, 3);
-    arpush(arr, &arr_len, 4);
-    arpush(arr, &arr_len, 5);
-    arrem(arr, &arr_len, 2);
+    arpush(arr, &arr_len, (int) { 1 });
+    arpush(arr, &arr_len, (int) { 2 });
+    arpush(arr, &arr_len, (int) { 3 });
+    arpush(arr, &arr_len, (int) { 4 });
+    arpush(arr, &arr_len, (int) { 5 });
 
     printf("arr len: %zu\n", arr_len);
     printf("arr cap: %zu\n", arr_cap);
@@ -27,12 +26,11 @@ int main(void)
     // Dynamic array
     int *darr = DARNEW;
 
-    darpush(darr, 1);
-    darpush(darr, 2);
-    darpush(darr, 3);
-    darpush(darr, 4);
-    darpush(darr, 5);
-    darrem(darr, 2);
+    darpush(darr, (int) { 1 });
+    darpush(darr, (int) { 2 });
+    darpush(darr, (int) { 3 });
+    darpush(darr, (int) { 4 });
+    darpush(darr, (int) { 5 });
 
     printf("darr len: %zu\n", darlen(darr));
     printf("darr cap: %zu\n", darcap(darr));

@@ -2,9 +2,18 @@
 #define SCH_ARRAY_H
 #include <stddef.h> // for size_t
 
-#ifndef sch_unqvar
-# define sch_unqvar(name) _x_sch_##name
-#endif // sch_unqvar
+// Check if C23 is supported (for typeof)
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)
+
+# ifndef SCH_C23
+#  define SCH_C23
+# endif // SCH_C23
+
+# ifndef sch_unqvar
+#  define sch_unqvar(name) _x_sch_##name
+# endif // sch_unqvar
+
+#endif // SCH_C23
 
 void sch_arpush(void *arr, size_t elm_size, size_t *len_ptr, const void *elm);
 void sch_arpop(void *arr, size_t elm_size, size_t *len_ptr);
@@ -13,19 +22,32 @@ void sch_arrem(void *arr, size_t elm_size, size_t *len_ptr, size_t index);
 void sch_arcpy(void *dst, const void *src, size_t elm_size, size_t len);
 void sch_arclr(void *arr, size_t elm_size, size_t *len_ptr);
 
-#define arpush(arr, len_ptr, elm) do \
+#ifdef SCH_C23
+# define arpush(arr, len_ptr, elm) do \
 { \
     typeof(*(arr)) sch_unqvar(Element) = (elm); \
     sch_arpush((arr), sizeof(*(arr)), (len_ptr), &sch_unqvar(Element)); \
 } while (0)
+#else
+# define arpush(arr, len_ptr, elm) sch_arpush((arr), sizeof(*(arr)), (len_ptr), &(elm))
+#endif // SCH_C23
+
 #define arpop(arr, len_ptr) sch_arpop((arr), sizeof(*(arr)), (len_ptr))
-#define arins(arr, len_ptr, index, elm) do \
+
+#ifdef SCH_C23
+# define arins(arr, len_ptr, index, elm) do \
 { \
     typeof(*(arr)) sch_unqvar(Element) = (elm); \
     sch_arins((arr), sizeof(*(arr)), (len_ptr), (index), &sch_unqvar(Element)); \
 } while (0)
+#else
+# define arins(arr, len_ptr, index, elm) sch_arins((arr), sizeof(*(arr)), (len_ptr), (index), &(elm))
+#endif // SCH_C23
+
 #define arrem(arr, len_ptr, index) sch_arrem((arr), sizeof(*(arr)), (len_ptr), (index))
+
 #define arcpy(dst, src, len) sch_arcpy((dst), (src), sizeof(*(dst)), (len))
+
 #define arclr(arr, len_ptr) sch_arclr((arr), sizeof(*(arr)), (len_ptr))
 
 void sch_darfree(void *p);
@@ -41,25 +63,45 @@ size_t sch_darlen(const void *darr);
 size_t sch_darcap(const void *darr);
 
 #define DARNEW NULL
+
 #define darfree(darr) sch_darfree((void *)darr)
-#define darpush(darr, elm) do \
+
+#ifdef SCH_C23
+# define darpush(darr, elm) do \
 { \
     typeof(*(darr)) sch_unqvar(Element) = (elm); \
     sch_darpush((void **)&(darr), sizeof(*(darr)), &sch_unqvar(Element)); \
 } while (0)
+#else
+# define darpush(darr, elm) sch_darpush((void **)&(darr), sizeof(*(darr)), &(elm))
+#endif // SCH_C23
+
 #define darpop(darr) sch_darpop((void **)&(darr), sizeof(*(darr)))
-#define darins(darr, index, elm) do \
+
+#ifdef SCH_C23
+# define darins(darr, index, elm) do \
 { \
     typeof(*(darr)) sch_unqvar(Element) = (elm); \
     sch_darins((void **)&(darr), sizeof(*(darr)), (index), &sch_unqvar(Element)); \
 } while (0)
+#else
+# define darins(darr, index, elm) sch_darins((void **)&(darr), sizeof(*(darr)), (index), &(elm))
+#endif // SCH_C23
+
 #define darrem(darr, index) sch_darrem((void **)&(darr), sizeof(*(darr)), (index))
+
 #define darres(darr, cap) sch_darres((void **)&(darr), sizeof(*(darr)), (cap))
+
 #define darfit(darr) sch_darfit((void **)&(darr), sizeof(*(darr)))
+
 #define darsiz(darr, len, opt_fill_ptr) sch_darsiz((void **)&(darr), sizeof(*(darr)), (len), (opt_fill_ptr))
+
 #define darclr(darr) sch_darclr((void **)&(darr), sizeof(*(darr)))
+
 #define darlen(darr) sch_darlen((void *)darr)
+
 #define darcap(darr) sch_darcap((void *)darr)
+
 #define darempty(darr) (darlen(darr) == 0)
 
 #endif // SCH_ARRAY_H

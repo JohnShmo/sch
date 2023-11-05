@@ -4,7 +4,7 @@ IDIR=include
 ODIR=obj
 SDIR=src
 
-CFLAGS=-I$(IDIR) -Wall -Wextra -Werror -pedantic -g -std=c2x
+CFLAGS=-I$(IDIR) -Wall -Wextra -Werror -pedantic -g -std=c99
 
 .PHONY: default all clean
 

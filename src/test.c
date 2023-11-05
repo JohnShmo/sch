@@ -8,11 +8,11 @@ int main(void)
     size_t arr_cap = sizeof(arr) / sizeof(arr[0]);
     size_t arr_len = 0;
 
-    arpush(arr, &arr_len, (int) { 1 });
-    arpush(arr, &arr_len, (int) { 2 });
-    arpush(arr, &arr_len, (int) { 3 });
-    arpush(arr, &arr_len, (int) { 4 });
-    arpush(arr, &arr_len, (int) { 5 });
+    arpush(arr, arr_len++, (int) { 1 });
+    arpush(arr, arr_len++, (int) { 2 });
+    arpush(arr, arr_len++, (int) { 3 });
+    arpush(arr, arr_len++, (int) { 4 });
+    arpush(arr, arr_len++, (int) { 5 });
 
     printf("arr len: %zu\n", arr_len);
     printf("arr cap: %zu\n", arr_cap);

@@ -32,12 +32,10 @@
 
 // Function Prototypes =======================================
 
-void sch_arpush(void *arr, size_t elm_size, size_t *len_ptr, const void *elm);
-void sch_arpop(void *arr, size_t elm_size, size_t *len_ptr);
-void sch_arins(void *arr, size_t elm_size, size_t *len_ptr, size_t index, const void *elm);
-void sch_arrem(void *arr, size_t elm_size, size_t *len_ptr, size_t index);
+void sch_arpush(void *arr, size_t elm_size, size_t len, const void *elm);
+void sch_arins(void *arr, size_t elm_size, size_t len, size_t index, const void *elm);
+void sch_arrem(void *arr, size_t elm_size, size_t len, size_t index);
 void sch_arcpy(void *dst, const void *src, size_t elm_size, size_t len);
-void sch_arclr(void *arr, size_t elm_size, size_t *len_ptr);
 void sch_darfree(void *darr);
 void sch_darpush(void **darr_ptr, size_t elm_size, const void *elm);
 void sch_darpop(void **darr_ptr, size_t elm_size);
@@ -55,62 +53,52 @@ size_t sch_darcap(const void *darr);
 #ifdef SCH_C23
 /// Add an element to the end of an array.
 /// @param arr The array to push to.
-/// @param len_ptr A pointer to the length of the array.
+/// @param len The current length of the array.
 /// @param elm The element to push.
-# define arpush(arr, len_ptr, elm) do \
+# define arpush(arr, len, elm) do \
 { \
     typeof(*(arr)) sch_unqvar(Element) = (elm); \
-    sch_arpush((arr), sizeof(*(arr)), (len_ptr), &sch_unqvar(Element)); \
+    sch_arpush((arr), sizeof(*(arr)), (len), &sch_unqvar(Element)); \
 } while (0)
 #else
 /// Add an element to the end of an array.
 /// @param arr The array to push to.
-/// @param len_ptr A pointer to the length of the array.
+/// @param len The current length of the array.
 /// @param elm The element to push.
-# define arpush(arr, len_ptr, elm) sch_arpush((arr), sizeof(*(arr)), (len_ptr), &(elm))
+# define arpush(arr, len, elm) sch_arpush((arr), sizeof(*(arr)), (len), &(elm))
 #endif // SCH_C23
-
-/// Remove an element from the end of an array.
-/// @param arr The array to pop from.
-/// @param len_ptr A pointer to the length of the array.
-#define arpop(arr, len_ptr) sch_arpop((arr), sizeof(*(arr)), (len_ptr))
 
 #ifdef SCH_C23
 /// Insert an element into an array at a given index.
 /// @param arr The array to insert into.
-/// @param len_ptr A pointer to the length of the array.
+/// @param len The current length of the array.
 /// @param index The index to insert at.
 /// @param elm The element to insert.
-# define arins(arr, len_ptr, index, elm) do \
+# define arins(arr, len, index, elm) do \
 { \
     typeof(*(arr)) sch_unqvar(Element) = (elm); \
-    sch_arins((arr), sizeof(*(arr)), (len_ptr), (index), &sch_unqvar(Element)); \
+    sch_arins((arr), sizeof(*(arr)), (len), (index), &sch_unqvar(Element)); \
 } while (0)
 #else
 /// Insert an element into an array at a given index.
 /// @param arr The array to insert into.
-/// @param len_ptr A pointer to the length of the array.
+/// @param len The current length of the array.
 /// @param index The index to insert at.
 /// @param elm The element to insert.
-# define arins(arr, len_ptr, index, elm) sch_arins((arr), sizeof(*(arr)), (len_ptr), (index), &(elm))
+# define arins(arr, len, index, elm) sch_arins((arr), sizeof(*(arr)), (len), (index), &(elm))
 #endif // SCH_C23
 
 /// Remove an element from an array at a given index.
 /// @param arr The array to remove from.
-/// @param len_ptr A pointer to the length of the array.
+/// @param len The current length of the array.
 /// @param index The index to remove from.
-#define arrem(arr, len_ptr, index) sch_arrem((arr), sizeof(*(arr)), (len_ptr), (index))
+#define arrem(arr, len, index) sch_arrem((arr), sizeof(*(arr)), (len), (index))
 
 /// Copy an array.
 /// @param dst The destination array.
 /// @param src The source array.
 /// @param len The length of both arrays.
 #define arcpy(dst, src, len) sch_arcpy((dst), (src), sizeof(*(dst)), (len))
-
-/// Clear an array.
-/// @param arr The array to clear.
-/// @param len_ptr A pointer to the length of the array.
-#define arclr(arr, len_ptr) sch_arclr((arr), sizeof(*(arr)), (len_ptr))
 
 /// Free a dynamic array.
 /// @param darr The dynamic array to free.
@@ -266,45 +254,28 @@ static inline void sch_daralloc_if_null(void **arr_ptr, size_t elm_size)
     }
 }
 
-void sch_arpush(void *arr, size_t elm_size, size_t *len_ptr, const void *elm)
+void sch_arpush(void *arr, size_t elm_size, size_t len, const void *elm)
 {
-    char *write_ptr = ((char *)arr) + (*len_ptr * elm_size);
+    char *write_ptr = ((char *)arr) + (len * elm_size);
     memcpy(write_ptr, elm, elm_size);
-    ++(*len_ptr);
 }
 
-void sch_arpop(void *arr, size_t elm_size, size_t *len_ptr)
-{
-    (void)arr;
-    (void)elm_size;
-    --(*len_ptr);
-}
-
-void sch_arins(void *arr, size_t elm_size, size_t *len_ptr, size_t index, const void *elm)
+void sch_arins(void *arr, size_t elm_size, size_t len, size_t index, const void *elm)
 {
     char *write_ptr = ((char *)arr) + (index * elm_size);
-    memmove(write_ptr + elm_size, write_ptr, (*len_ptr - index) * elm_size);
+    memmove(write_ptr + elm_size, write_ptr, (len - index) * elm_size);
     memcpy(write_ptr, elm, elm_size);
-    ++(*len_ptr);
 }
 
-void sch_arrem(void *arr, size_t elm_size, size_t *len_ptr, size_t index)
+void sch_arrem(void *arr, size_t elm_size, size_t len, size_t index)
 {
     char *write_ptr = ((char *)arr) + (index * elm_size);
-    memmove(write_ptr, write_ptr + elm_size, (*len_ptr - index) * elm_size);
-    --(*len_ptr);
+    memmove(write_ptr, write_ptr + elm_size, (len - index) * elm_size);
 }
 
 void sch_arcpy(void *dst, const void *src, size_t elm_size, size_t len)
 {
     memcpy(dst, src, elm_size * len);
-}
-
-void sch_arclr(void *arr, size_t elm_size, size_t *len_ptr)
-{
-    (void)arr;
-    (void)elm_size;
-    *len_ptr = 0;
 }
 
 void sch_darfree(void *p)
@@ -329,11 +300,13 @@ void sch_darpush(void **arr_ptr, size_t elm_size, const void *elm)
     {
         sch_dargrow(arr_ptr, elm_size);
     }
-    sch_arpush(*arr_ptr, elm_size, &(header->len), elm);
+    sch_arpush(*arr_ptr, elm_size, header->len, elm);
+    header->len++;
 }
 
 void sch_darpop(void **arr_ptr, size_t elm_size)
 {
+    (void)elm_size;
     if (*arr_ptr == NULL)
     {
         return;
@@ -343,7 +316,7 @@ void sch_darpop(void **arr_ptr, size_t elm_size)
     {
         return;
     }
-    sch_arpop(*arr_ptr, elm_size, &(header->len));
+    header->len--;
 }
 
 void sch_darins(void **arr_ptr, size_t elm_size, size_t index, const void *elm)
@@ -358,7 +331,8 @@ void sch_darins(void **arr_ptr, size_t elm_size, size_t index, const void *elm)
     {
         sch_dargrow(arr_ptr, elm_size);
     }
-    sch_arins(*arr_ptr, elm_size, &(header->len), index, elm);
+    sch_arins(*arr_ptr, elm_size, header->len, index, elm);
+    header->len++;
 }
 
 void sch_darrem(void **arr_ptr, size_t elm_size, size_t index)
@@ -372,7 +346,8 @@ void sch_darrem(void **arr_ptr, size_t elm_size, size_t index)
     {
         return;
     }
-    sch_arrem(*arr_ptr, elm_size, &(header->len), index);
+    sch_arrem(*arr_ptr, elm_size, header->len, index);
+    header->len--;
 }
 
 void sch_darres(void **darr_ptr, size_t elm_size, size_t cap)
@@ -447,7 +422,8 @@ void sch_darsiz(void **darr_ptr, size_t elm_size, size_t len, const void *opt_fi
     }
     for (size_t i = header->len; i < len; i++)
     {
-        sch_arpush(*darr_ptr, elm_size, &(header->len), opt_fill);
+        sch_arpush(*darr_ptr, elm_size, header->len, opt_fill);
+        header->len++;
     }
 }
 

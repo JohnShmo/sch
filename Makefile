@@ -1,10 +1,12 @@
 TARGET=a
 CC=gcc
+CSTD=c99
+
 IDIR=include
 ODIR=obj
 SDIR=src
 
-CFLAGS=-I$(IDIR) -Wall -Wextra -Werror -pedantic -g -std=c99
+CFLAGS=-I$(IDIR) -Wall -Wextra -Werror -pedantic -g -std=$(CSTD)
 
 .PHONY: default all clean
 
@@ -21,7 +23,7 @@ $(ODIR)/%.o: $(SDIR)/%.c $(HEADERS)
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -Wall -Wextra -Werror -pedantic -g -o $@
+	$(CC) $(OBJECTS) $(CFLAGS) -o $@
 
 clean:
 	-rm -f $(ODIR)/*.o

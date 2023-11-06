@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "sch_array.h"
+#include "sch_string.h"
 
 int main(void)
 {

@@ -207,7 +207,7 @@ dstrerr_t sch_dstrfree(dstr_t *dstr_ptr)
 
 dstrerr_t sch_dstrcpy(dstr_t *dstr_ptr, const char *str)
 {
-    sch_dstrarloc_if_null(dstr_ptr);
+    sch_dstralloc_if_null(dstr_ptr);
     if (!*dstr_ptr)
         return DSTRERR_ALLOC;
     if (!str)
@@ -222,11 +222,12 @@ dstrerr_t sch_dstrcpy(dstr_t *dstr_ptr, const char *str)
     }
     memcpy(*dstr_ptr, str, len);
     sch_dstremplace_nullterm(*dstr_ptr, len);
+    return DSTRERR_NONE;
 }
 
 dstrerr_t sch_dstrcat(dstr_t *dstr_ptr, const char *str)
 {
-    sch_dstrarloc_if_null(dstr_ptr);
+    sch_dstralloc_if_null(dstr_ptr);
     if (!*dstr_ptr)
         return DSTRERR_ALLOC;
     if (!str)
@@ -247,7 +248,7 @@ dstrerr_t sch_dstrcat(dstr_t *dstr_ptr, const char *str)
 
 dstrerr_t sch_dstrpush(dstr_t *dstr_ptr, char c)
 {
-    sch_dstrarloc_if_null(dstr_ptr);
+    sch_dstralloc_if_null(dstr_ptr);
     if (!*dstr_ptr)
         return DSTRERR_ALLOC;
     size_t new_len = sch_dstrheader(*dstr_ptr)->len + 1;
@@ -265,7 +266,7 @@ dstrerr_t sch_dstrpush(dstr_t *dstr_ptr, char c)
 
 dstrerr_t sch_dstrpop(dstr_t *dstr_ptr)
 {
-    sch_dstrarloc_if_null(dstr_ptr);
+    sch_dstralloc_if_null(dstr_ptr);
     if (!*dstr_ptr)
         return DSTRERR_ALLOC;
     if (sch_dstrheader(*dstr_ptr)->len == 0)
@@ -276,7 +277,7 @@ dstrerr_t sch_dstrpop(dstr_t *dstr_ptr)
 
 dstrerr_t sch_dstrres(dstr_t *dstr_ptr, size_t new_cap)
 {
-    sch_dstrarloc_if_null(dstr_ptr);
+    sch_dstralloc_if_null(dstr_ptr);
     if (!*dstr_ptr)
         return DSTRERR_ALLOC;
     if (sch_dstrheader(*dstr_ptr)->cap < new_cap)
@@ -291,7 +292,7 @@ dstrerr_t sch_dstrres(dstr_t *dstr_ptr, size_t new_cap)
 
 dstrerr_t sch_dstrsiz(dstr_t *dstr_ptr, size_t new_len, char c_fill)
 {
-    sch_dstrarloc_if_null(dstr_ptr);
+    sch_dstralloc_if_null(dstr_ptr);
     if (!*dstr_ptr)
         return DSTRERR_ALLOC;
     if (sch_dstrheader(*dstr_ptr)->len > new_len)
@@ -315,7 +316,7 @@ dstrerr_t sch_dstrsiz(dstr_t *dstr_ptr, size_t new_len, char c_fill)
 
 dstrerr_t sch_dstrclr(dstr_t *dstr_ptr)
 {
-    sch_dstrarloc_if_null(dstr_ptr);
+    sch_dstralloc_if_null(dstr_ptr);
     if (!*dstr_ptr)
         return DSTRERR_ALLOC;
     sch_dstremplace_nullterm(*dstr_ptr, 0);
@@ -324,7 +325,7 @@ dstrerr_t sch_dstrclr(dstr_t *dstr_ptr)
 
 dstrerr_t sch_dstrfit(dstr_t *dstr_ptr)
 {
-    sch_dstrarloc_if_null(dstr_ptr);
+    sch_dstralloc_if_null(dstr_ptr);
     if (!*dstr_ptr)
         return DSTRERR_ALLOC;
     dstr_t dstr = sch_dstrrealloc(*dstr_ptr, sch_dstrheader(*dstr_ptr)->len + 1);
@@ -336,11 +337,15 @@ dstrerr_t sch_dstrfit(dstr_t *dstr_ptr)
 
 size_t sch_dstrlen(const dstr_t dstr)
 {
+    if (!dstr)
+        return 0;
     return sch_dstrheader(dstr)->len;
 }
 
 size_t sch_dstrcap(const dstr_t dstr)
 {
+    if (!dstr)
+        return 0;
     return sch_dstrheader(dstr)->cap;
 }
 

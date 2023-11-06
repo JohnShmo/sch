@@ -215,7 +215,8 @@ dstrerr_t sch_dstrcpy(dstr_t *dstr_ptr, const char *str)
     size_t len = strlen(str);
     if (sch_dstrheader(*dstr_ptr)->cap < len + 1)
     {
-        dstr_t dstr = sch_dstrrealloc(*dstr_ptr, len + 1);
+        size_t new_cap = (size_t)((double)(len + 1) * SCH_DSTR_GROWTH_FACTOR);
+        dstr_t dstr = sch_dstrrealloc(*dstr_ptr, new_cap);
         if (!dstr)
             return DSTRERR_ALLOC;
         *dstr_ptr = dstr;
@@ -236,7 +237,8 @@ dstrerr_t sch_dstrcat(dstr_t *dstr_ptr, const char *str)
     size_t new_len = sch_dstrheader(*dstr_ptr)->len + len;
     if (sch_dstrheader(*dstr_ptr)->cap < new_len + 1)
     {
-        dstr_t dstr = sch_dstrrealloc(*dstr_ptr, new_len + 1);
+        size_t new_cap = (size_t)((double)(new_len + 1) * SCH_DSTR_GROWTH_FACTOR);
+        dstr_t dstr = sch_dstrrealloc(*dstr_ptr, new_cap);
         if (!dstr)
             return DSTRERR_ALLOC;
         *dstr_ptr = dstr;
@@ -254,7 +256,8 @@ dstrerr_t sch_dstrpush(dstr_t *dstr_ptr, char c)
     size_t new_len = sch_dstrheader(*dstr_ptr)->len + 1;
     if (sch_dstrheader(*dstr_ptr)->cap < new_len + 1)
     {
-        dstr_t dstr = sch_dstrrealloc(*dstr_ptr, new_len + 1);
+        size_t new_cap = (size_t)((double)(new_len + 1) * SCH_DSTR_GROWTH_FACTOR);
+        dstr_t dstr = sch_dstrrealloc(*dstr_ptr, new_cap);
         if (!dstr)
             return DSTRERR_ALLOC;
         *dstr_ptr = dstr;

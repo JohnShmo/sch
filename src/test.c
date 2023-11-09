@@ -1,30 +1,31 @@
 #include <stdio.h>
 #include "sch_array.h"
-
-typedef struct
-{
-    size_t size;
-    size_t capacity;
-    int *data;
-} int_array_t;
+#include "sch_string.h"
 
 int main(void)
 {
+    string_t str;
+    dstrnew(&str, "Hello, world!");
+    printf("Length: %zu\n", dstrlen(&str));
+    printf("Capacity: %zu\n", dstrcap(&str));
+    printf("%s\n", dstrc(&str));
 
-    int_array_t arr;
-    darnew(&arr, 1);
+    dstrcat(&str, " Short.");
+    printf("Length: %zu\n", dstrlen(&str));
+    printf("Capacity: %zu\n", dstrcap(&str));
+    printf("%s\n", dstrc(&str));
 
-    for (int i = 1; i <= 10; i++)
-    {
-        darpush(&arr, i);
-    }
+    dstrcat(&str, " Long long long long long long!");
+    printf("Length: %zu\n", dstrlen(&str));
+    printf("Capacity: %zu\n", dstrcap(&str));
+    printf("%s\n", dstrc(&str));
 
-    for (size_t i = 0; i < darsiz(&arr); i++)
-    {
-        printf("%d\n", dardat(&arr)[i]);
-    }
+    dstrfit(&str);
+    printf("Length: %zu\n", dstrlen(&str));
+    printf("Capacity: %zu\n", dstrcap(&str));
+    printf("%s\n", dstrc(&str));
 
-    darfree(&arr);
+    dstrfree(&str);
 
     return 0;
 }

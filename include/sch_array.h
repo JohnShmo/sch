@@ -198,6 +198,18 @@ static void sch_realloc_if_needed(struct sch_dar *arr, size_t new_size, size_t e
     }
 }
 
+static void sch_grow_if_needed(struct sch_dar *arr, size_t elem_size)
+{
+    assert(arr != NULL);
+    assert(elem_size > 0);
+
+    if (arr->size == arr->capacity)
+    {
+        arr->capacity *= 2;
+        arr->data = realloc(arr->data, arr->capacity * elem_size);
+    }
+}
+
 
 void sch_darnew(struct sch_dar *arr, size_t capacity, size_t elem_size)
 {
@@ -226,7 +238,7 @@ void sch_darpush(struct sch_dar *arr, const void *elem, size_t elem_size)
     assert(elem != NULL);
     assert(elem_size > 0);
 
-    sch_realloc_if_needed(arr, arr->size + 1, elem_size);
+    sch_grow_if_needed(arr, elem_size);
 
     memcpy((char *)arr->data + arr->size * elem_size, elem, elem_size);
     arr->size++;
@@ -250,7 +262,7 @@ void sch_darins(struct sch_dar *arr, const void *elem, size_t index, size_t elem
     assert(index < arr->size);
     assert(elem_size > 0);
 
-    sch_realloc_if_needed(arr, arr->size + 1, elem_size);
+    sch_grow_if_needed(arr, elem_size);
 
     memmove((char *)arr->data + (index + 1) * elem_size, (char *)arr->data + index * elem_size, (arr->size - index) * elem_size);
     memcpy((char *)arr->data + index * elem_size, elem, elem_size);

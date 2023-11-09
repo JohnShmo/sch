@@ -102,7 +102,8 @@ int sch_darempty(const struct sch_dar *arr);
 // - T* data
 // Where T is the type of the array's elements.
 
-#define sch_to_dar(arr) ((struct sch_dar *)arr)
+#define sch_to_dar(arr) ((struct sch_dar *)(arr))
+#define sch_to_const_dar(arr) ((const struct sch_dar *)(arr))
 #define sch_elem_size(arr) (sizeof(*(arr)->data))
 
 /// Create a new dynamic array with the given capacity.
@@ -180,7 +181,7 @@ int sch_darempty(const struct sch_dar *arr);
 /// Check if the dynamic array is empty.
 /// @param arr A pointer to the dynamic array struct.
 /// @return 1 if the array is empty, 0 otherwise.
-#define darempty(arr) sch_darempty(sch_to_dar(arr))
+#define darempty(arr) sch_darempty(sch_to_const_dar(arr))
 
 SCH_API_END // End extern "C" block
 

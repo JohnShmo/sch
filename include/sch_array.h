@@ -92,7 +92,7 @@ void sch_darres(struct sch_dar *arr, size_t new_capacity, size_t elem_size);
 void sch_darrez(struct sch_dar *arr, size_t new_size, size_t elem_size, const void *optional_filler);
 size_t sch_darsiz(const struct sch_dar *arr);
 size_t sch_darcap(const struct sch_dar *arr);
-void *sch_dardata(const struct sch_dar *arr);
+void *sch_dardat(const struct sch_dar *arr);
 int sch_darempty(const struct sch_dar *arr);
 
 // Macros ====================================================
@@ -174,7 +174,7 @@ int sch_darempty(const struct sch_dar *arr);
 /// Get a pointer to the data of the dynamic array.
 /// @param arr A pointer to the dynamic array struct.
 /// @return A pointer to the data of the array.
-#define dardata(arr) ((arr)->data)
+#define dardat(arr) ((arr)->data)
 
 /// Check if the dynamic array is empty.
 /// @param arr A pointer to the dynamic array struct.
@@ -343,7 +343,7 @@ size_t sch_darcap(const struct sch_dar *arr)
     return arr->capacity;
 }
 
-void *sch_dardata(const struct sch_dar *arr)
+void *sch_dardat(const struct sch_dar *arr)
 {
     assert(arr != NULL);
 

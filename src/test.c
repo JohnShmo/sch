@@ -12,16 +12,16 @@ int main(void)
 {
 
     int_array_t arr;
-    darnew(&arr, 10);
+    darnew(&arr, 1);
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 1; i <= 10; i++)
     {
         darpush(&arr, i);
     }
 
-    for (int i = 0; i < 10; i++)
+    for (size_t i = 0; i < darsiz(&arr); i++)
     {
-        printf("%d\n", arr.data[i]);
+        printf("%d\n", dardat(&arr)[i]);
     }
 
     darfree(&arr);

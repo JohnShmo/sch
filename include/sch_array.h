@@ -159,7 +159,7 @@ int sch_darempty(const struct sch_dar *arr);
 /// If the new size is larger than the current size, the new elements are filled with the given filler.
 /// @param arr A pointer to the dynamic array struct.
 /// @param new_size The new size of the array.
-/// @param optional_filler A pointer to an element to fill the new elements with, or NULL to fill with zeroes.
+/// @param optional_filler_ptr A pointer to an element to fill the new elements with, or NULL to fill with zeroes.
 #define darrez(arr, new_size, optional_filler_ptr) sch_darrez(sch_to_dar(arr), (new_size), sch_elem_size(arr), (optional_filler_ptr))
 
 /// Get the size of the dynamic array.

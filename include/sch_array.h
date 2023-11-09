@@ -153,7 +153,8 @@ int sch_darempty(struct sch_dar *arr);
 /// @param new_capacity The new capacity of the array.
 #define darres(arr, new_capacity) sch_darres(sch_to_dar(arr), (new_capacity), sizeof(*(arr)->data))
 
-/// Resize the dynamic array to the given size. If the new size is smaller than the current size, the array is truncated. If the new size is larger than the current size, the new elements are filled with the given filler.
+/// Resize the dynamic array to the given size. If the new size is smaller than the current size, the array is truncated. 
+/// If the new size is larger than the current size, the new elements are filled with the given filler.
 /// @param arr A pointer to the dynamic array struct.
 /// @param new_size The new size of the array.
 /// @param optional_filler A pointer to an element to fill the new elements with, or NULL to fill with zeroes.
@@ -186,30 +187,8 @@ SCH_API_END // End extern "C" block
 #include <string.h>
 #include <assert.h>
 
-static void sch_realloc_if_needed(struct sch_dar *arr, size_t new_size, size_t elem_size)
-{
-    assert(arr != NULL);
-    assert(elem_size > 0);
-
-    if (arr->capacity < new_size)
-    {
-        arr->capacity = new_size;
-        arr->data = realloc(arr->data, arr->capacity * elem_size);
-    }
-}
-
-static void sch_grow_if_needed(struct sch_dar *arr, size_t elem_size)
-{
-    assert(arr != NULL);
-    assert(elem_size > 0);
-
-    if (arr->size == arr->capacity)
-    {
-        arr->capacity *= 2;
-        arr->data = realloc(arr->data, arr->capacity * elem_size);
-    }
-}
-
+static void sch_realloc_if_needed(struct sch_dar *arr, size_t new_size, size_t elem_size);
+static void sch_grow_if_needed(struct sch_dar *arr, size_t elem_size);
 
 void sch_darnew(struct sch_dar *arr, size_t capacity, size_t elem_size)
 {
@@ -360,6 +339,30 @@ int sch_darempty(struct sch_dar *arr)
     assert(arr != NULL);
 
     return arr->size == 0;
+}
+
+static void sch_realloc_if_needed(struct sch_dar *arr, size_t new_size, size_t elem_size)
+{
+    assert(arr != NULL);
+    assert(elem_size > 0);
+
+    if (arr->capacity < new_size)
+    {
+        arr->capacity = new_size;
+        arr->data = realloc(arr->data, arr->capacity * elem_size);
+    }
+}
+
+static void sch_grow_if_needed(struct sch_dar *arr, size_t elem_size)
+{
+    assert(arr != NULL);
+    assert(elem_size > 0);
+
+    if (arr->size == arr->capacity)
+    {
+        arr->capacity *= 2;
+        arr->data = realloc(arr->data, arr->capacity * elem_size);
+    }
 }
 
 #endif // SCH_IMPL

@@ -90,6 +90,7 @@ void sch_darcpy(struct sch_dar *arr, const void *src, size_t n, size_t elem_size
 void sch_darcat(struct sch_dar *arr, const void *src, size_t n, size_t elem_size);
 void sch_darres(struct sch_dar *arr, size_t new_capacity, size_t elem_size);
 void sch_darrez(struct sch_dar *arr, size_t new_size, size_t elem_size, const void *optional_filler);
+void sch_darfit(struct sch_dar *arr, size_t elem_size);
 size_t sch_darsiz(const struct sch_dar *arr);
 size_t sch_darcap(const struct sch_dar *arr);
 void *sch_dardat(const struct sch_dar *arr);
@@ -162,6 +163,10 @@ int sch_darempty(const struct sch_dar *arr);
 /// @param new_size The new size of the array.
 /// @param optional_filler_ptr A pointer to an element to fill the new elements with, or NULL to fill with zeroes.
 #define darrez(arr, new_size, optional_filler_ptr) sch_darrez(sch_to_dar(arr), (new_size), sch_elem_size(arr), (optional_filler_ptr))
+
+/// Fit the dynamic array to its current size. This is useful if you want to save memory after removing elements.
+/// @param arr A pointer to the dynamic array struct.
+#define darfit(arr) sch_darfit(sch_to_dar(arr), sch_elem_size(arr))
 
 /// Get the size of the dynamic array.
 /// @param arr A pointer to the dynamic array struct.
@@ -329,6 +334,15 @@ void sch_darrez(struct sch_dar *arr, size_t new_size, size_t elem_size, const vo
     }
 
     arr->size = new_size;
+}
+
+void sch_darfit(struct sch_dar *arr, size_t elem_size)
+{
+    assert(arr != NULL);
+    assert(elem_size > 0);
+
+    arr->capacity = arr->size;
+    arr->data = realloc(arr->data, arr->capacity * elem_size);
 }
 
 size_t sch_darsiz(const struct sch_dar *arr)

@@ -107,6 +107,14 @@ int sch_darempty(const struct sch_dar *arr);
 #define sch_to_const_dar(arr) ((const struct sch_dar *)(arr))
 #define sch_elem_size(arr) (sizeof(*(arr)->data))
 
+#ifndef sch_to_void_ptr
+# define sch_to_void_ptr(p) ((void *)(p))
+#endif // sch_to_void_ptr
+
+#ifndef sch_to_const_void_ptr
+# define sch_to_const_void_ptr(p) ((const void *)(p))
+#endif // sch_to_const_void_ptr
+
 /// Create a new dynamic array with the given capacity.
 /// @param arr A pointer to the dynamic array struct.
 /// @param capacity The initial capacity of the array.
@@ -119,7 +127,7 @@ int sch_darempty(const struct sch_dar *arr);
 /// Push an element to the end of the dynamic array.
 /// @param arr A pointer to the dynamic array struct.
 /// @param elem The element to push. (must be an lvalue)
-#define darpush(arr, elem) sch_darpush(sch_to_dar(arr), &(elem), sch_elem_size(arr))
+#define darpush(arr, elem) sch_darpush(sch_to_dar(arr), sch_to_const_void_ptr(&(elem)), sch_elem_size(arr))
 
 /// Pop an element from the end of the dynamic array.
 /// @param arr A pointer to the dynamic array struct.
@@ -129,7 +137,7 @@ int sch_darempty(const struct sch_dar *arr);
 /// @param arr A pointer to the dynamic array struct.
 /// @param elem The element to insert. (must be an lvalue)
 /// @param index The index at which to insert the element.
-#define darins(arr, elem, index) sch_darins(sch_to_dar(arr), &(elem), (index), sch_elem_size(arr))
+#define darins(arr, elem, index) sch_darins(sch_to_dar(arr), sch_to_const_void_ptr(&(elem)), (index), sch_elem_size(arr))
 
 /// Remove an element at the given index.
 /// @param arr A pointer to the dynamic array struct.
@@ -144,13 +152,13 @@ int sch_darempty(const struct sch_dar *arr);
 /// @param arr A pointer to the dynamic array struct.
 /// @param src A pointer to an array to copy. (regular C array or buffer)
 /// @param n The number of elements to copy.
-#define darcpy(arr, src, n) sch_darcpy(sch_to_dar(arr), (src), (n), sch_elem_size(arr))
+#define darcpy(arr, src, n) sch_darcpy(sch_to_dar(arr), sch_to_const_void_ptr(src), (n), sch_elem_size(arr))
 
 /// Concatenate the given array to the dynamic array.
 /// @param arr A pointer to the dynamic array struct.
 /// @param src A pointer to an array to concatenate. (regular C array or buffer)
 /// @param n The number of elements to concatenate.
-#define darcat(arr, src, n) sch_darcat(sch_to_dar(arr), (src), (n), sch_elem_size(arr))
+#define darcat(arr, src, n) sch_darcat(sch_to_dar(arr), sch_to_const_void_ptr(src), (n), sch_elem_size(arr))
 
 /// Reserve the dynamic array with the given capacity. If the new capacity is smaller than the current capacity, nothing happens.
 /// @param arr A pointer to the dynamic array struct.
@@ -162,7 +170,7 @@ int sch_darempty(const struct sch_dar *arr);
 /// @param arr A pointer to the dynamic array struct.
 /// @param new_size The new size of the array.
 /// @param optional_filler_ptr A pointer to an element to fill the new elements with, or NULL to fill with zeroes.
-#define darrez(arr, new_size, optional_filler_ptr) sch_darrez(sch_to_dar(arr), (new_size), sch_elem_size(arr), (optional_filler_ptr))
+#define darrez(arr, new_size, optional_filler_ptr) sch_darrez(sch_to_dar(arr), (new_size), sch_elem_size(arr), sch_to_const_void_ptr(optional_filler_ptr))
 
 /// Fit the dynamic array to its current size. This is useful if you want to save memory after removing elements.
 /// @param arr A pointer to the dynamic array struct.

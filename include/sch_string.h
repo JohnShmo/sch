@@ -146,7 +146,7 @@ SCH_API_END // End extern "C" block
 
 inline static int sch_dstr_can_fit_on_stack(size_t len)
 {
-    return len < SCH_STRING_STACK_CAPACITY ? 1 : 0;
+    return len <= SCH_STRING_STACK_CAPACITY ? 1 : 0;
 }
 
 inline static char *sch_dstr_stack_data(string_t *str)
@@ -205,7 +205,7 @@ inline static void sch_dstr_grow_if_needed(string_t *str, size_t len)
 {
     if (sch_dstr_is_stack(str))
     {
-        if (len >= SCH_STRING_STACK_CAPACITY)
+        if (len > SCH_STRING_STACK_CAPACITY)
         {
             size_t capacity = (len + 1) * 2; // Grow by 2x to avoid reallocating too often
             size_t size = dstrlen(str);

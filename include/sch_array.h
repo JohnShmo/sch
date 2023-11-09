@@ -90,9 +90,10 @@ void sch_darcpy(struct sch_dar *arr, const void *src, size_t n, size_t elem_size
 void sch_darcat(struct sch_dar *arr, const void *src, size_t n, size_t elem_size);
 void sch_darres(struct sch_dar *arr, size_t new_capacity, size_t elem_size);
 void sch_darrez(struct sch_dar *arr, size_t new_size, size_t elem_size, const void *optional_filler);
-size_t sch_darsiz(struct sch_dar *arr);
-size_t sch_darcap(struct sch_dar *arr);
-int sch_darempty(struct sch_dar *arr);
+size_t sch_darsiz(const struct sch_dar *arr);
+size_t sch_darcap(const struct sch_dar *arr);
+void *sch_dardata(const struct sch_dar *arr);
+int sch_darempty(const struct sch_dar *arr);
 
 // Macros ====================================================
 // These macros are type-generic, but they require a struct with the following members:
@@ -163,12 +164,17 @@ int sch_darempty(struct sch_dar *arr);
 /// Get the size of the dynamic array.
 /// @param arr A pointer to the dynamic array struct.
 /// @return The size of the array.
-#define darsiz(arr) sch_darsiz(sch_to_dar(arr))
+#define darsiz(arr) ((arr)->size)
 
 /// Get the capacity of the dynamic array.
 /// @param arr A pointer to the dynamic array struct.
 /// @return The capacity of the array.
-#define darcap(arr) sch_darcap(sch_to_dar(arr))
+#define darcap(arr) ((arr)->capacity)
+
+/// Get a pointer to the data of the dynamic array.
+/// @param arr A pointer to the dynamic array struct.
+/// @return A pointer to the data of the array.
+#define dardata(arr) ((arr)->data)
 
 /// Check if the dynamic array is empty.
 /// @param arr A pointer to the dynamic array struct.
@@ -323,21 +329,28 @@ void sch_darrez(struct sch_dar *arr, size_t new_size, size_t elem_size, const vo
     arr->size = new_size;
 }
 
-size_t sch_darsiz(struct sch_dar *arr)
+size_t sch_darsiz(const struct sch_dar *arr)
 {
     assert(arr != NULL);
 
     return arr->size;
 }
 
-size_t sch_darcap(struct sch_dar *arr)
+size_t sch_darcap(const struct sch_dar *arr)
 {
     assert(arr != NULL);
 
     return arr->capacity;
 }
 
-int sch_darempty(struct sch_dar *arr)
+void *sch_dardata(const struct sch_dar *arr)
+{
+    assert(arr != NULL);
+
+    return arr->data;
+}
+
+int sch_darempty(const struct sch_dar *arr)
 {
     assert(arr != NULL);
 

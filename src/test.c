@@ -1,19 +1,30 @@
 #include <stdio.h>
 #include "sch_array.h"
-#include "sch_string.h"
+
+typedef struct
+{
+    size_t size;
+    size_t capacity;
+    int *data;
+} int_array_t;
 
 int main(void)
 {
-    dstr_t str = dstrnew("Hello, world!");
-    dstrcat(str, " I'm a string!");
-    dstrcat(str, " This is a test for dynamic strings!");
-    dstrcat(str, " I'm a string!");
 
-    printf("%s\n", dcstr(str));
-    printf("Length: %zu\n", dstrlen(str));
-    printf("Capacity: %zu\n", dstrcap(str));
+    int_array_t arr;
+    darnew(&arr, 10);
 
-    dstrfree(str);
+    for (int i = 0; i < 10; i++)
+    {
+        darpush(&arr, i);
+    }
+
+    for (int i = 0; i < 10; i++)
+    {
+        printf("%d\n", arr.data[i]);
+    }
+
+    darfree(&arr);
 
     return 0;
 }

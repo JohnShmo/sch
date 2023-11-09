@@ -1,495 +1,353 @@
+/*
+ * Purpose:         Single-header library for dynamic arrays.
+ * Date created:    November 2023
+ * Written by:      Scott DiGregorio
+ * License:         CC0 (public domain)
+ * Dependencies:    <stddef.h>, <stdlib.h>, <string.h>, <assert.h>
+*/
+
+/*
+ * Usage:
+ * Define SCH_IMPL before including this file in *one* C file to create the implementation.
+ *
+ * To use the type-generic macros, define a struct with the following members:
+ * - size_t size
+ * - size_t capacity
+ * - T* data
+ * Where T is the type of the array's elements.
+ *
+ * For example:
+
+typedef struct
+{
+    size_t size;
+    size_t capacity;
+    int* data;
+} int_array;
+
+ * Pass a pointer to instances of this struct to the macros.
+ *
+ * For example:
+
+struct int_array arr;
+darnew(&arr, 10);   // create a new array with capacity 10
+
+darpush(&arr, 5);   // push 5 to the end of the array
+darpush(&arr, 10);  // push 10 to the end of the array
+darpush(&arr, 15);  // push 15 to the end of the array
+darins(&arr, 7, 1); // insert 7 at index 1
+darrem(&arr, 2);    // remove the element at index 2
+
+darfree(&arr);      // free the memory used by the array
+
+ *
+*/
+
 #ifndef SCH_ARRAY_H
 #define SCH_ARRAY_H
+
+// Definitions ===============================================
+
+#ifndef SCH_API_BEGIN
+# ifdef __cplusplus
+#  define SCH_API_BEGIN extern "C" {
+#  define SCH_API_END   }
+# else
+#  define SCH_API_BEGIN
+#  define SCH_API_END
+# endif // __cplusplus
+#endif // SCH_API_BEGIN
+
+SCH_API_BEGIN // Begin extern "C" block
+
+// Includes ==================================================
+
 #include <stddef.h> // for size_t
-
-// Constants =================================================
-
-/// A value that represents a new dynamic array. (NULL)
-#define DARNEW NULL
-
-#ifndef SCH_DAR_GROWTH_FACTOR
-/// The default growth factor for dynamic arrays.
-/// @note This is a double. Although it is not recommended to change this,
-///       it is possible to do so by defining SCH_DAR_GROWTH_FACTOR before
-///       including this header.
-# define SCH_DAR_GROWTH_FACTOR (2.0)
-#endif // SCH_DAR_GROWTH_FACTOR
 
 // Types =====================================================
 
-/// An error code for array and dynamic array functions.
-typedef enum sch_arerr_t
+/// This struct represents a generic dynamic array.
+/// It is used by the macros to implement the type-generic functions.
+/// Ensure that any specific array type you use has the same members as this struct
+/// in the same order. (size, capacity, data)
+struct sch_dar
 {
-    ARERR_NONE = 0,
-    ARERR_ALLOC,
-    ARERR_INDEX,
-    ARERR_NULL,
-    ARERR_LEN,
-    ARERR_CAP,
-    ARERR_COUNT_
-} arerr_t;
+    size_t size;
+    size_t capacity;
+    void *data;
+};
 
-// Function Prototypes =======================================
+// Functions =================================================
 
-arerr_t sch_arpush(void *arr, size_t elm_size, size_t len, size_t cap, const void *elm);
-arerr_t sch_arins(void *arr, size_t elm_size, size_t len, size_t cap, size_t index, const void *elm);
-arerr_t sch_arrem(void *arr, size_t elm_size, size_t len, size_t cap, size_t index);
-arerr_t sch_arcpy(void *dst, const void *src, size_t elm_size, size_t len);
-arerr_t sch_darfree(void **darr_ptr);
-arerr_t sch_darpush(void **darr_ptr, size_t elm_size, const void *elm);
-arerr_t sch_darpop(void **darr_ptr, size_t elm_size);
-arerr_t sch_darins(void **darr_ptr, size_t elm_size, size_t index, const void *elm);
-arerr_t sch_darrem(void **darr_ptr, size_t elm_size, size_t index);
-arerr_t sch_darres(void **darr_ptr, size_t elm_size, size_t cap);
-arerr_t sch_darfit(void **darr_ptr, size_t elm_size);
-arerr_t sch_darsiz(void **darr_ptr, size_t elm_size, size_t len, const void *opt_fill);
-arerr_t sch_darclr(void **darr_ptr, size_t elm_size);
-size_t sch_darlen(const void *darr);
-size_t sch_darcap(const void *darr);
+void sch_darnew(struct sch_dar *arr, size_t capacity, size_t elem_size);
+void sch_darfree(struct sch_dar *arr);
+void sch_darpush(struct sch_dar *arr, const void *elem, size_t elem_size);
+void sch_darpop(struct sch_dar *arr, size_t elem_size);
+void sch_darins(struct sch_dar *arr, const void *elem, size_t index, size_t elem_size);
+void sch_darrem(struct sch_dar *arr, size_t index, size_t elem_size);
+void sch_darclr(struct sch_dar *arr);
+void sch_darcpy(struct sch_dar *arr, const void *src, size_t n, size_t elem_size);
+void sch_darcat(struct sch_dar *arr, const void *src, size_t n, size_t elem_size);
+void sch_darres(struct sch_dar *arr, size_t new_capacity, size_t elem_size);
+void sch_darrez(struct sch_dar *arr, size_t new_size, size_t elem_size, const void *optional_filler);
+size_t sch_darsiz(struct sch_dar *arr);
+size_t sch_darcap(struct sch_dar *arr);
+int sch_darempty(struct sch_dar *arr);
 
-/// Get a string representation of an array-related error code.
-/// @param err The error code to get a string representation of.
-/// @return A string representation of the error code, or NULL if the error code is invalid.
-const char *arerr_str(arerr_t err);
+// Macros ====================================================
+// These macros are type-generic, but they require a struct with the following members:
+// - size_t size
+// - size_t capacity
+// - T* data
+// Where T is the type of the array's elements.
 
-// Generic Macros ============================================
+#define sch_to_dar(arr) ((struct sch_dar *)arr)
 
-/// Add an element to the end of an array. Do not use this macro with dynamic arrays.
-/// @param arr The array to push to.
-/// @param len The current length of the array.
-/// @param cap The total capacity of the array.
-/// @param elm The element to push.
-/// @return An error code, or 0 if no error occurred.
-# define arpush(arr, len, cap, elm) sch_arpush((arr), sizeof(*(arr)), (len), (cap), &(elm))
+/// Create a new dynamic array with the given capacity.
+/// @param arr A pointer to the dynamic array struct.
+/// @param capacity The initial capacity of the array.
+#define darnew(arr, capacity) sch_darnew(sch_to_dar(arr), capacity, sizeof(*(arr)->data))
 
-/// Insert an element into an array at a given index. Do not use this macro with dynamic arrays.
-/// @param arr The array to insert into.
-/// @param len The current length of the array.
-/// @param cap The total capacity of the array.
-/// @param index The index to insert at.
-/// @param elm The element to insert.
-/// @return An error code, or 0 if no error occurred.
-# define arins(arr, len, cap, index, elm) sch_arins((arr), sizeof(*(arr)), (len), (cap), (index), &(elm))
+/// Free the memory used by the dynamic array.
+/// @param arr A pointer to the dynamic array struct.
+#define darfree(arr) sch_darfree(sch_to_dar(arr))
 
-/// Remove an element from an array at a given index. Do not use this macro with dynamic arrays.
-/// @param arr The array to remove from.
-/// @param len The current length of the array.
-/// @param cap The total capacity of the array.
-/// @param index The index to remove from.
-/// @return An error code, or 0 if no error occurred.
-#define arrem(arr, len, cap, index) sch_arrem((arr), sizeof(*(arr)), (len), (cap), (index))
+/// Push an element to the end of the dynamic array.
+/// @param arr A pointer to the dynamic array struct.
+/// @param elem The element to push. (must be an lvalue)
+#define darpush(arr, elem) sch_darpush(sch_to_dar(arr), &(elem), sizeof(*(arr)->data))
 
-/// Copy an array. Memory regions may overlap.
-/// @param dst The destination array.
-/// @param src The source array.
-/// @param len The length of both arrays.
-/// @return An error code, or 0 if no error occurred.
-#define arcpy(dst, src, len) sch_arcpy((dst), (src), sizeof(*(dst)), (len))
+/// Pop an element from the end of the dynamic array.
+/// @param arr A pointer to the dynamic array struct.
+#define darpop(arr) sch_darpop(sch_to_dar(arr), sizeof(*(arr)->data))
 
-/// Free a dynamic array. Sets the pointer to DARNEW (NULL), for reusability.
-/// @param darr The dynamic array to free.
-/// @return An error code, or 0 if no error occurred.
-#define darfree(darr) sch_darfree((void **)&(darr))
+/// Insert an element at the given index.
+/// @param arr A pointer to the dynamic array struct.
+/// @param elem The element to insert. (must be an lvalue)
+/// @param index The index at which to insert the element.
+#define darins(arr, elem, index) sch_darins(sch_to_dar(arr), &(elem), (index), sizeof(*(arr)->data))
 
-/// Add an element to the end of a dynamic array.
-/// @param darr The dynamic array to push to.
-/// @param elm The element to push.
-/// @return An error code, or 0 if no error occurred.
-# define darpush(darr, elm) sch_darpush((void **)&(darr), sizeof(*(darr)), &(elm))
+/// Remove an element at the given index.
+/// @param arr A pointer to the dynamic array struct.
+/// @param index The index of the element to remove.
+#define darrem(arr, index) sch_darrem(sch_to_dar(arr), (index), sizeof(*(arr)->data))
 
-/// Remove an element from the end of a dynamic array.
-/// @param darr The dynamic array to pop from.
-/// @return An error code, or 0 if no error occurred.
-#define darpop(darr) sch_darpop((void **)&(darr), sizeof(*(darr)))
+/// Clear the array.
+/// @param arr A pointer to the array struct.
+#define darclr(arr) sch_darclr(sch_to_dar(arr))
 
-/// Insert an element into a dynamic array at a given index.
-/// @param darr The dynamic array to insert into.
-/// @param index The index to insert at.
-/// @param elm The element to insert.
-/// @return An error code, or 0 if no error occurred.
-# define darins(darr, index, elm) sch_darins((void **)&(darr), sizeof(*(darr)), (index), &(elm))
+/// Copy the given array into the dynamic array.
+/// @param arr A pointer to the dynamic array struct.
+/// @param src A pointer to an array to copy. (regular C array or buffer)
+/// @param n The number of elements to copy.
+#define darcpy(arr, src, n) sch_darcpy(sch_to_dar(arr), (src), (n), sizeof(*(arr)->data))
 
-/// Remove an element from a dynamic array at a given index.
-/// @param darr The dynamic array to remove from.
-/// @param index The index to remove from.
-/// @return An error code, or 0 if no error occurred.
-#define darrem(darr, index) sch_darrem((void **)&(darr), sizeof(*(darr)), (index))
+/// Concatenate the given array to the dynamic array.
+/// @param arr A pointer to the dynamic array struct.
+/// @param src A pointer to an array to concatenate. (regular C array or buffer)
+/// @param n The number of elements to concatenate.
+#define darcat(arr, src, n) sch_darcat(sch_to_dar(arr), (src), (n), sizeof(*(arr)->data))
 
-/// Reserve space for a number of elements in a dynamic array.
-/// @param darr The dynamic array to reserve space in.
-/// @param cap The number of elements to reserve space for.
-/// @return An error code, or 0 if no error occurred.
-#define darres(darr, cap) sch_darres((void **)&(darr), sizeof(*(darr)), (cap))
+/// Reserve the dynamic array with the given capacity. If the new capacity is smaller than the current capacity, nothing happens.
+/// @param arr A pointer to the dynamic array struct.
+/// @param new_capacity The new capacity of the array.
+#define darres(arr, new_capacity) sch_darres(sch_to_dar(arr), (new_capacity), sizeof(*(arr)->data))
 
-/// Fit a dynamic array to its length.
-/// @param darr The dynamic array to fit.
-/// @return An error code, or 0 if no error occurred.
-#define darfit(darr) sch_darfit((void **)&(darr), sizeof(*(darr)))
+/// Resize the dynamic array to the given size. If the new size is smaller than the current size, the array is truncated. If the new size is larger than the current size, the new elements are filled with the given filler.
+/// @param arr A pointer to the dynamic array struct.
+/// @param new_size The new size of the array.
+/// @param optional_filler A pointer to an element to fill the new elements with, or NULL to fill with zeroes.
+#define darrez(arr, new_size, optional_filler_ptr) sch_darrez(sch_to_dar(arr), (new_size), sizeof(*(arr)->data), (optional_filler_ptr))
 
-/// Set the length of a dynamic array.
-/// @param darr The dynamic array to set the length of.
-/// @param len The length to set.
-/// @param opt_fill_ptr A pointer to an optional element to fill the array with. (NULL to fill with zeroes)
-/// @return An error code, or 0 if no error occurred.
-#define darsiz(darr, len, opt_fill_ptr) sch_darsiz((void **)&(darr), sizeof(*(darr)), (len), (opt_fill_ptr))
+/// Get the size of the dynamic array.
+/// @param arr A pointer to the dynamic array struct.
+/// @return The size of the array.
+#define darsiz(arr) sch_darsiz(sch_to_dar(arr))
 
-/// Clear a dynamic array.
-/// @param darr The dynamic array to clear.
-/// @return An error code, or 0 if no error occurred.
-#define darclr(darr) sch_darclr((void **)&(darr), sizeof(*(darr)))
+/// Get the capacity of the dynamic array.
+/// @param arr A pointer to the dynamic array struct.
+/// @return The capacity of the array.
+#define darcap(arr) sch_darcap(sch_to_dar(arr))
 
-/// Get the length of a dynamic array.
-/// @param darr The dynamic array to get the length of.
-/// @return The length of the dynamic array. (0 if NULL)
-#define darlen(darr) sch_darlen((darr))
+/// Check if the dynamic array is empty.
+/// @param arr A pointer to the dynamic array struct.
+/// @return 1 if the array is empty, 0 otherwise.
+#define darempty(arr) sch_darempty(sch_to_dar(arr))
 
-/// Get the capacity of a dynamic array.
-/// @param darr The dynamic array to get the capacity of.
-/// @return The capacity of the dynamic array. (0 if NULL)
-#define darcap(darr) sch_darcap((darr))
-
-/// Check if a dynamic array is empty.
-/// @param darr The dynamic array to check.
-/// @return 1 if the dynamic array is empty, 0 otherwise.
-#define darempty(darr) (darlen((darr)) == 0)
+SCH_API_END // End extern "C" block
 
 #endif // SCH_ARRAY_H
 
-// Implementation =============================================
-
 #ifdef SCH_IMPL
+
+// Implementation =============================================
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
-struct dar_header_t
+static void sch_realloc_if_needed(struct sch_dar *arr, size_t new_size, size_t elem_size)
 {
-    size_t len;
-    size_t cap;
-};
+    assert(arr != NULL);
+    assert(elem_size > 0);
 
-static inline struct dar_header_t *dar_header(const void *p)
-{
-    return ((struct dar_header_t *)p) - 1;
+    if (arr->capacity < new_size)
+    {
+        arr->capacity = new_size;
+        arr->data = realloc(arr->data, arr->capacity * elem_size);
+    }
 }
 
-static inline void *sch_darmalloc(size_t n, size_t elm_size)
+
+void sch_darnew(struct sch_dar *arr, size_t capacity, size_t elem_size)
 {
-    struct dar_header_t *header = malloc(sizeof(struct dar_header_t) + (n * elm_size));
-    if (header == NULL)
-    {
-        return NULL;
-    }
-    header->len = 0;
-    header->cap = n;
-    return (void *)(header + 1);
+    assert(arr != NULL);
+    assert(capacity > 0);
+    assert(elem_size > 0);
+
+    arr->size = 0;
+    arr->capacity = capacity;
+    arr->data = malloc(capacity * elem_size);
 }
 
-static inline void *sch_darrealloc(void *p, size_t n, size_t elm_size)
+void sch_darfree(struct sch_dar *arr)
 {
-    if (p == NULL)
-    {
-        return sch_darmalloc(n, elm_size);
-    }
-    struct dar_header_t *header = dar_header(p);
-    struct dar_header_t *new_header = realloc(header, sizeof(struct dar_header_t) + (n * elm_size));
-    if (new_header == NULL)
-    {
-        return NULL;
-    }
-    header = new_header;
-    header->cap = n;
-    return (void *)(header + 1);
+    assert(arr != NULL);
+
+    free(arr->data);
+    arr->data = NULL;
+    arr->size = 0;
+    arr->capacity = 0;
 }
 
-static inline arerr_t sch_dargrow(void **arr_ptr, size_t elm_size)
+void sch_darpush(struct sch_dar *arr, const void *elem, size_t elem_size)
 {
-    struct dar_header_t *header = dar_header(*arr_ptr);
-    size_t new_cap = (size_t)((double)header->cap * SCH_DAR_GROWTH_FACTOR);
-    void *new_arr = sch_darrealloc(*arr_ptr, new_cap, elm_size);
-    if (new_arr == NULL)
-    {
-        return ARERR_ALLOC;
-    }
-    *arr_ptr = new_arr;
-    return ARERR_NONE;
+    assert(arr != NULL);
+    assert(elem != NULL);
+    assert(elem_size > 0);
+
+    sch_realloc_if_needed(arr, arr->size + 1, elem_size);
+
+    memcpy((char *)arr->data + arr->size * elem_size, elem, elem_size);
+    arr->size++;
 }
 
-static inline arerr_t sch_daralloc_if_null(void **arr_ptr, size_t elm_size)
+void sch_darpop(struct sch_dar *arr, size_t elem_size)
 {
-    if (*arr_ptr == NULL)
+    assert(arr != NULL);
+    assert(elem_size > 0);
+
+    if (arr->size > 0)
     {
-        *arr_ptr = sch_darmalloc(1, elm_size);
-        if (*arr_ptr == NULL)
-        {
-            return ARERR_ALLOC;
-        }
+        arr->size--;
     }
-    return ARERR_NONE;
 }
 
-arerr_t sch_arpush(void *arr, size_t elm_size, size_t len, size_t cap, const void *elm)
+void sch_darins(struct sch_dar *arr, const void *elem, size_t index, size_t elem_size)
 {
-    if (len >= cap)
-    {
-        return ARERR_CAP;
-    }
-    char *write_ptr = ((char *)arr) + (len * elm_size);
-    memcpy(write_ptr, elm, elm_size);
-    return ARERR_NONE;
+    assert(arr != NULL);
+    assert(elem != NULL);
+    assert(index < arr->size);
+    assert(elem_size > 0);
+
+    sch_realloc_if_needed(arr, arr->size + 1, elem_size);
+
+    memmove((char *)arr->data + (index + 1) * elem_size, (char *)arr->data + index * elem_size, (arr->size - index) * elem_size);
+    memcpy((char *)arr->data + index * elem_size, elem, elem_size);
+    arr->size++;
 }
 
-arerr_t sch_arins(void *arr, size_t elm_size, size_t len, size_t cap, size_t index, const void *elm)
+void sch_darrem(struct sch_dar *arr, size_t index, size_t elem_size)
 {
-    if (len >= cap)
-    {
-        return ARERR_CAP;
-    }
-    if (index > len)
-    {
-        return ARERR_INDEX;
-    }
-    char *write_ptr = ((char *)arr) + (index * elm_size);
-    memmove(write_ptr + elm_size, write_ptr, (len - index) * elm_size);
-    memcpy(write_ptr, elm, elm_size);
-    return ARERR_NONE;
+    assert(arr != NULL);
+    assert(index < arr->size);
+    assert(elem_size > 0);
+
+    memmove((char *)arr->data + index * elem_size, (char *)arr->data + (index + 1) * elem_size, (arr->size - index - 1) * elem_size);
+    arr->size--;
 }
 
-arerr_t sch_arrem(void *arr, size_t elm_size, size_t len, size_t cap, size_t index)
+void sch_darclr(struct sch_dar *arr)
 {
-    (void)cap;
-    if (len == 0)
-    {
-        return ARERR_LEN;
-    }
-    char *write_ptr = ((char *)arr) + (index * elm_size);
-    memmove(write_ptr, write_ptr + elm_size, (len - index) * elm_size);
-    return ARERR_NONE;
+    assert(arr != NULL);
+
+    arr->size = 0;
 }
 
-arerr_t sch_arcpy(void *dst, const void *src, size_t elm_size, size_t len)
+void sch_darcpy(struct sch_dar *dest, const void *src, size_t n, size_t elem_size)
 {
-    memmove(dst, src, elm_size * len);
-    return ARERR_NONE;
+    assert(dest != NULL);
+    assert(src != NULL);
+    assert(n > 0);
+    assert(elem_size > 0);
+
+    sch_realloc_if_needed(dest, n, elem_size);
+
+    memcpy((char *)dest->data, src, n * elem_size);
+    dest->size = n;
 }
 
-arerr_t sch_darfree(void **dar_ptr)
+void sch_darcat(struct sch_dar *dest, const void *src, size_t n, size_t elem_size)
 {
-    if (*dar_ptr == NULL)
-    {
-        return ARERR_NULL;
-    }
-    struct dar_header_t *header = dar_header(*dar_ptr);
-    free(header);
-    *dar_ptr = NULL;
-    return ARERR_NONE;
+    assert(dest != NULL);
+    assert(src != NULL);
+    assert(n > 0);
+    assert(elem_size > 0);
+
+    sch_realloc_if_needed(dest, dest->size + n, elem_size);
+
+    memcpy((char *)dest->data + dest->size * elem_size, src, n * elem_size);
+    dest->size += n;
 }
 
-arerr_t sch_darpush(void **arr_ptr, size_t elm_size, const void *elm)
+void sch_darres(struct sch_dar *arr, size_t new_capacity, size_t elem_size)
 {
-    if (sch_daralloc_if_null(arr_ptr, elm_size) != ARERR_NONE)
-    {
-        return ARERR_ALLOC;
-    }
-    struct dar_header_t *header = dar_header(*arr_ptr);
-    if (header->len == header->cap)
-    {
-        if (sch_dargrow(arr_ptr, elm_size) != ARERR_NONE)
-        {
-            return ARERR_ALLOC;
-        }
-    }
-    sch_arpush(*arr_ptr, elm_size, header->len, header->cap, elm);
-    header->len++;
-    return ARERR_NONE;
+    assert(arr != NULL);
+    assert(new_capacity > 0);
+    assert(elem_size > 0);
+
+    sch_realloc_if_needed(arr, new_capacity, elem_size);
 }
 
-arerr_t sch_darpop(void **arr_ptr, size_t elm_size)
+void sch_darrez(struct sch_dar *arr, size_t new_size, size_t elem_size, const void *optional_filler)
 {
-    (void)elm_size;
-    if (*arr_ptr == NULL)
+    assert(arr != NULL);
+    assert(new_size > 0);
+    assert(elem_size > 0);
+
+    sch_realloc_if_needed(arr, new_size, elem_size);
+
+    if (optional_filler != NULL)
     {
-        return ARERR_NULL;
+        memcpy(arr->data, optional_filler, new_size * elem_size);
     }
-    struct dar_header_t *header = dar_header(*arr_ptr);
-    if (header->len == 0)
+    else
     {
-        return ARERR_LEN;
+        memset(arr->data, 0, new_size * elem_size);
     }
-    header->len--;
-    return ARERR_NONE;
+
+    arr->size = new_size;
 }
 
-arerr_t sch_darins(void **arr_ptr, size_t elm_size, size_t index, const void *elm)
+size_t sch_darsiz(struct sch_dar *arr)
 {
-    if (sch_daralloc_if_null(arr_ptr, elm_size) != ARERR_NONE)
-    {
-        return ARERR_ALLOC;
-    }
-    struct dar_header_t *header = dar_header(*arr_ptr);
-    if (header->len == header->cap)
-    {
-        if (sch_dargrow(arr_ptr, elm_size) != ARERR_NONE)
-        {
-            return ARERR_ALLOC;
-        }
-    }
-    if (sch_arins(*arr_ptr, elm_size, header->len, header->cap, index, elm) != ARERR_NONE)
-    {
-        return ARERR_INDEX;
-    }
-    header->len++;
-    return ARERR_NONE;
+    assert(arr != NULL);
+
+    return arr->size;
 }
 
-arerr_t sch_darrem(void **arr_ptr, size_t elm_size, size_t index)
+size_t sch_darcap(struct sch_dar *arr)
 {
-    if (*arr_ptr == NULL)
-    {
-        return ARERR_NULL;
-    }
-    struct dar_header_t *header = dar_header(*arr_ptr);
-    if (header->len == 0)
-    {
-        return ARERR_LEN;
-    }
-    if (sch_arrem(*arr_ptr, elm_size, header->len, header->cap, index) != ARERR_NONE)
-    {
-        return ARERR_INDEX;
-    }
-    header->len--;
-    return ARERR_NONE;
+    assert(arr != NULL);
+
+    return arr->capacity;
 }
 
-arerr_t sch_darres(void **darr_ptr, size_t elm_size, size_t cap)
+int sch_darempty(struct sch_dar *arr)
 {
-    if (sch_daralloc_if_null(darr_ptr, elm_size) != ARERR_NONE)
-    {
-        return ARERR_ALLOC;
-    }
-    struct dar_header_t *header = dar_header(*darr_ptr);
-    if (header->cap == cap)
-    {
-        return ARERR_NONE;
-    }
-    void *new_arr = sch_darrealloc(*darr_ptr, cap, elm_size);
-    if (new_arr == NULL)
-    {
-        return ARERR_ALLOC;
-    }
-    *darr_ptr = new_arr;
-    return ARERR_NONE;
-}
+    assert(arr != NULL);
 
-arerr_t sch_darfit(void **darr_ptr, size_t elm_size)
-{
-    if (*darr_ptr == NULL)
-    {
-        return ARERR_NULL;
-    }
-    struct dar_header_t *header = dar_header(*darr_ptr);
-    if (header->len == header->cap)
-    {
-        return ARERR_NONE;
-    }
-    void *new_arr = sch_darrealloc(*darr_ptr, header->len, elm_size);
-    if (new_arr == NULL)
-    {
-        return ARERR_ALLOC;
-    }
-    *darr_ptr = new_arr;
-    return ARERR_NONE;
-}
-
-arerr_t sch_darsiz(void **darr_ptr, size_t elm_size, size_t len, const void *opt_fill)
-{
-    if (sch_daralloc_if_null(darr_ptr, elm_size) != ARERR_NONE)
-    {
-        return ARERR_ALLOC;
-    }
-    struct dar_header_t *header = dar_header(*darr_ptr);
-    if (header->len == len)
-    {
-        return ARERR_NONE;
-    }
-    if (header->len > len)
-    {
-        header->len = len;
-        return ARERR_NONE;
-    }
-    if (header->cap < len)
-    {
-        arerr_t err = sch_darres(darr_ptr, elm_size, len);
-        if (err != ARERR_NONE)
-        {
-            return err;
-        }
-    }
-    if (opt_fill == NULL)
-    {
-        memset(*darr_ptr, 0, (len - header->len) * elm_size);
-        header->len = len;
-        return ARERR_NONE;
-    }
-    for (size_t i = header->len; i < len; i++)
-    {
-        sch_arpush(*darr_ptr, elm_size, header->len, header->cap, opt_fill);
-        header->len++;
-    }
-    return ARERR_NONE;
-}
-
-arerr_t sch_darclr(void **darr_ptr, size_t elm_size)
-{
-    (void)elm_size;
-    if (*darr_ptr == NULL)
-    {
-        return ARERR_NULL;
-    }
-    struct dar_header_t *header = dar_header(*darr_ptr);
-    header->len = 0;
-    return ARERR_NONE;
-}
-
-size_t sch_darlen(const void *arr)
-{
-    if (arr == NULL)
-    {
-        return 0;
-    }
-    struct dar_header_t *header = dar_header(arr);
-    return header->len;
-}
-
-size_t sch_darcap(const void *arr)
-{
-    if (arr == NULL)
-    {
-        return 0;
-    }
-    struct dar_header_t *header = dar_header(arr);
-    return header->cap;
-}
-
-const char *arerr_str(arerr_t err)
-{
-    switch (err)
-    {
-    case ARERR_NONE:
-        return "No error";
-    case ARERR_ALLOC:
-        return "Allocation error";
-    case ARERR_INDEX:
-        return "Index out of bounds error";
-    case ARERR_NULL:
-        return "NULL pointer error";
-    case ARERR_LEN:
-        return "Incompatible length error";
-    case ARERR_CAP:
-        return "Insufficient capacity error";
-    default:
-        return NULL;
-    }
+    return arr->size == 0;
 }
 
 #endif // SCH_IMPL

@@ -310,7 +310,10 @@ void sch_darrez(struct sch_dar *arr, size_t new_size, size_t elem_size, const vo
 
     if (optional_filler != NULL)
     {
-        memcpy(arr->data, optional_filler, new_size * elem_size);
+        for (size_t i = arr->size; i < new_size; i++)
+        {
+            memcpy((char *)arr->data + i * elem_size, optional_filler, elem_size);
+        }
     }
     else
     {

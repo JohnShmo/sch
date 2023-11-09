@@ -103,11 +103,12 @@ int sch_darempty(const struct sch_dar *arr);
 // Where T is the type of the array's elements.
 
 #define sch_to_dar(arr) ((struct sch_dar *)arr)
+#define sch_elem_size(arr) (sizeof(*(arr)->data))
 
 /// Create a new dynamic array with the given capacity.
 /// @param arr A pointer to the dynamic array struct.
 /// @param capacity The initial capacity of the array.
-#define darnew(arr, capacity) sch_darnew(sch_to_dar(arr), capacity, sizeof(*(arr)->data))
+#define darnew(arr, capacity) sch_darnew(sch_to_dar(arr), capacity, sch_elem_size(arr))
 
 /// Free the memory used by the dynamic array.
 /// @param arr A pointer to the dynamic array struct.
@@ -116,22 +117,22 @@ int sch_darempty(const struct sch_dar *arr);
 /// Push an element to the end of the dynamic array.
 /// @param arr A pointer to the dynamic array struct.
 /// @param elem The element to push. (must be an lvalue)
-#define darpush(arr, elem) sch_darpush(sch_to_dar(arr), &(elem), sizeof(*(arr)->data))
+#define darpush(arr, elem) sch_darpush(sch_to_dar(arr), &(elem), sch_elem_size(arr))
 
 /// Pop an element from the end of the dynamic array.
 /// @param arr A pointer to the dynamic array struct.
-#define darpop(arr) sch_darpop(sch_to_dar(arr), sizeof(*(arr)->data))
+#define darpop(arr) sch_darpop(sch_to_dar(arr), sch_elem_size(arr))
 
 /// Insert an element at the given index.
 /// @param arr A pointer to the dynamic array struct.
 /// @param elem The element to insert. (must be an lvalue)
 /// @param index The index at which to insert the element.
-#define darins(arr, elem, index) sch_darins(sch_to_dar(arr), &(elem), (index), sizeof(*(arr)->data))
+#define darins(arr, elem, index) sch_darins(sch_to_dar(arr), &(elem), (index), sch_elem_size(arr))
 
 /// Remove an element at the given index.
 /// @param arr A pointer to the dynamic array struct.
 /// @param index The index of the element to remove.
-#define darrem(arr, index) sch_darrem(sch_to_dar(arr), (index), sizeof(*(arr)->data))
+#define darrem(arr, index) sch_darrem(sch_to_dar(arr), (index), sch_elem_size(arr))
 
 /// Clear the array.
 /// @param arr A pointer to the array struct.
@@ -141,25 +142,25 @@ int sch_darempty(const struct sch_dar *arr);
 /// @param arr A pointer to the dynamic array struct.
 /// @param src A pointer to an array to copy. (regular C array or buffer)
 /// @param n The number of elements to copy.
-#define darcpy(arr, src, n) sch_darcpy(sch_to_dar(arr), (src), (n), sizeof(*(arr)->data))
+#define darcpy(arr, src, n) sch_darcpy(sch_to_dar(arr), (src), (n), sch_elem_size(arr))
 
 /// Concatenate the given array to the dynamic array.
 /// @param arr A pointer to the dynamic array struct.
 /// @param src A pointer to an array to concatenate. (regular C array or buffer)
 /// @param n The number of elements to concatenate.
-#define darcat(arr, src, n) sch_darcat(sch_to_dar(arr), (src), (n), sizeof(*(arr)->data))
+#define darcat(arr, src, n) sch_darcat(sch_to_dar(arr), (src), (n), sch_elem_size(arr))
 
 /// Reserve the dynamic array with the given capacity. If the new capacity is smaller than the current capacity, nothing happens.
 /// @param arr A pointer to the dynamic array struct.
 /// @param new_capacity The new capacity of the array.
-#define darres(arr, new_capacity) sch_darres(sch_to_dar(arr), (new_capacity), sizeof(*(arr)->data))
+#define darres(arr, new_capacity) sch_darres(sch_to_dar(arr), (new_capacity), sch_elem_size(arr))
 
 /// Resize the dynamic array to the given size. If the new size is smaller than the current size, the array is truncated. 
 /// If the new size is larger than the current size, the new elements are filled with the given filler.
 /// @param arr A pointer to the dynamic array struct.
 /// @param new_size The new size of the array.
 /// @param optional_filler A pointer to an element to fill the new elements with, or NULL to fill with zeroes.
-#define darrez(arr, new_size, optional_filler_ptr) sch_darrez(sch_to_dar(arr), (new_size), sizeof(*(arr)->data), (optional_filler_ptr))
+#define darrez(arr, new_size, optional_filler_ptr) sch_darrez(sch_to_dar(arr), (new_size), sch_elem_size(arr), (optional_filler_ptr))
 
 /// Get the size of the dynamic array.
 /// @param arr A pointer to the dynamic array struct.
